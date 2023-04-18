@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_dim_google_ads__ad_groups
+    description: >
+      This model contains information about Google Ads ad groups. It is derived from the
+      `ad_group_history` table in the `stg_google_ads` schema, and includes the most recent
+      version of each ad group.
+    columns:
+      - name: ad_group_id
+        description: The ID of the ad group.
+      - name: ad_group_name
+        description: The name of the ad group.
+
+  - name: stg_dim_google_ads__ads
+    description: >
+      This model contains information about Google Ads ads. It is derived from the
+      `ad_history` table in the `stg_google_ads` schema, and includes the most recent
+      version of each ad.
+    columns:
+      - name: ad_id
+        description: The ID of the ad.
+      - name: ad_name
+        description: The name of the ad.
+  
+  - name: stg_dim_google_ads__placements
+    description: >
+      This model contains information about Google Ads ad placements. It is derived from the
+      `placement_history` table in the `stg_google_ads` schema, and includes the most recent
+      version of each placement.
+    columns:
+      - name: placement_id
+        description: The ID of the placement.
+      - name: placement_name
+        description: The name of the placement.
