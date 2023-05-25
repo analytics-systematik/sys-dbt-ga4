@@ -9,4 +9,6 @@ models:
         tests:
           - not_null
           - unique
+    config:
+      schema: stg_google_analytics_4
 

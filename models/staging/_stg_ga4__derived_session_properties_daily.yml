@@ -9,3 +9,5 @@ models:
       - name: session_partition_key
         tests:
           - unique
+    config:
+      schema: stg_google_analytics_4

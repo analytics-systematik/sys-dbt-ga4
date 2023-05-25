@@ -17,3 +17,5 @@ models:
       - name: session_partition_date
         description: >
           Date associated with the session_partition_key. Used to partition the table. Filter on this column to optimize query cost and performance. 
+    config:
+      schema: stg_google_analytics_4_core

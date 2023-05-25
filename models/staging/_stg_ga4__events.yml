@@ -18,3 +18,5 @@ models:
           the data shows that this is not always the case. When a user_engagement event does not fire, the engagement_time_msec parameter is assigned to the next page_view. 
           This engagement time should be credited to the previous page, 
           so for page_view events this field uses the session_key and page_referrer as the key while all other events use the session_key and page_location.
+    config:
+      schema: stg_google_analytics_4

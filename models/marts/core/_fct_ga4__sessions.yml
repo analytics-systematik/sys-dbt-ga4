@@ -16,3 +16,5 @@ models:
       - name: session_start_date
         description: >
           Date associated with the first session partition.
+    config:
+      schema: stg_google_analytics_4_core

@@ -8,3 +8,5 @@ models:
         tests:
           - not_null:
               severity: warn
+    config:
+        schema: stg_google_analytics_4

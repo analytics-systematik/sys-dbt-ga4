@@ -8,3 +8,5 @@ models:
         description: Total engagement time in a session for all page_view events to the same page_location.
       - name: page_engagement_denominator
         description: The total number of page_views in a session to the same page_location except for pages with no page_engagement_time.
+    config:
+      schema: stg_google_analytics_4

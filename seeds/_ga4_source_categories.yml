@@ -1,0 +1,6 @@
+version: 2
+
+seeds:
+  - name: ga4_source_categories
+    config:
+      schema: stg_google_analytics_4

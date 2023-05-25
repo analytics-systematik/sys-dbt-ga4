@@ -22,3 +22,5 @@ models:
         description: The the most recent non-direct channel grouping within a 30-day lookback window.
         tests:
           - not_null
+    config:
+        schema: stg_google_analytics_4

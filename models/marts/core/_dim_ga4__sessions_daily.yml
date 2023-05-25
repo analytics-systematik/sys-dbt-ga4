@@ -24,3 +24,5 @@ models:
         description: The source of the session based on the events contained within this particular session. For last non-direct source, see last_non_direct_source
       - name: last_non_direct_source
         description: The last non-direct source attributed to this session based on a 30-day lookback window. 
+    config:
+        schema: stg_google_analytics_4_core

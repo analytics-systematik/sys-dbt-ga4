@@ -8,3 +8,5 @@ models:
         description: Hashed combination of user_pseudo_id and stream_id
         tests:
           - unique  
+    config:
+      schema: stg_google_analytics_4
