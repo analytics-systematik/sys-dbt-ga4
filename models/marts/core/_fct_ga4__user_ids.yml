@@ -8,4 +8,5 @@ models:
     tests: 
     - unique:
         column_name: "md5(user_id_or_client_key || stream_id)"
-        
+    config:
+      schema: stg_google_analytics_4_core

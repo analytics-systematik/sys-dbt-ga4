@@ -6,3 +6,5 @@ models:
       Staging model containing only 'scroll' events. 
       Includes the 'percent_scrolled' parameter.
       GA4's default implementation will only track the 90% scroll threshold
+    config:
+      schema: stg_google_analytics_4

@@ -1,0 +1,6 @@
+version: 2
+
+models:  
+  - name: stg_ga4__sessions_first_last_pageviews
+    config:
+      schema: stg_google_analytics_4

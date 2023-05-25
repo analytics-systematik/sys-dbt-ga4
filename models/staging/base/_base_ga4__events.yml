@@ -45,3 +45,5 @@ models:
         description: Whether Analytics storage is enabled for the user. Possible values are Yes, No, Unset
       - name: privacy_info_ads_storage
         description: Whether ad targeting is enabled for a user. Possible values are Yes, No, Unset
+    config:
+      schema: stg_google_analytics_4
