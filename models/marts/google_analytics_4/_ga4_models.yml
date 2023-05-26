@@ -1,0 +1,10 @@
+
+version: 2         
+
+models:
+  - name: ga4__sessions
+    config:
+      schema: marts_google_analytics_4
+      materialized: table
+
+

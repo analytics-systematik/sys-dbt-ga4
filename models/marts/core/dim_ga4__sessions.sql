@@ -45,6 +45,7 @@ with session_first_event as
         user_campaign,
         user_medium,
         user_source,
+        exit_page
     from session_first_event
 ),
 join_traffic_source as (
@@ -68,6 +69,18 @@ include_session_properties as (
     -- If derived session properties have been assigned as variables, join them on the session_key
     left join {{ref('stg_ga4__derived_session_properties')}} using (session_key)
     {% endif %}
+),
+add_systematik_fields as (
+    select 
+        *,
+        regexp_extract(landing_page, r'(?i)[?&]ad_group_id=([^&]+)') as sys_session_ad_group_id,
+        regexp_extract(landing_page, r'(?i)[?&]ad_id=([^&]+)') as sys_session_ad_id,
+        regexp_extract(landing_page, r'(?i)[?&]placement_id=([^&]+)') as sys_session_placement_id,
+        regexp_extract(landing_page, '^([^?]+)') as sys_session_landing_page,
+        regexp_extract(landing_page, r'(?i)^https?://[^/]+(/[^?]*)') as sys_session_landing_page_path,
+        regexp_extract(exit_page, '^([^?]+)') as sys_session_exit_page, 
+        regexp_extract(exit_page, r'(?i)^https?://[^/]+(/[^?]*)')  as sys_session_exit_page_path
+    from include_session_properties
 )
 
-select * from include_session_properties
+select * from add_systematik_fields

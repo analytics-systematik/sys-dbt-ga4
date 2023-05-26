@@ -85,5 +85,26 @@ page_key as (
             else to_base64(md5(concat(session_key, page_location)))
         end as page_engagement_key
     from enrich_params
+),
+exit_page as (
+    select
+        *,
+        first_value(
+                (
+                    select value.string_value
+                    from unnest(event_params)
+                    where event_name = 'page_view' and key = 'page_location'
+                )
+            ) over (
+                partition by
+                    user_pseudo_id,
+                    (
+                        select value.int_value
+                        from unnest(event_params)
+                        where event_name = 'page_view' and key = 'ga_session_id'
+                    )
+                order by event_timestamp desc
+            ) as exit_page
+    from page_key
 )
-select * from page_key
+select * from exit_page
