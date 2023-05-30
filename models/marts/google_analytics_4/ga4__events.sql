@@ -9,7 +9,7 @@ with events as (
 
     select * from {{ ref('stg_ga4__events') }}
 
-), dim_sessions as (
+), sessions as (
 
     select * from {{ ref('dim_ga4__sessions') }}
 
