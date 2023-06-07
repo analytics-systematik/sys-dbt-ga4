@@ -101,7 +101,7 @@
     {{ ga4.unnest_key('event_params', 'term', 'lower_string_value', 'event_term') }}
     {% if var("default_custom_parameters", "none") != "none" %}
       {{ ga4.stage_custom_parameters( var("default_custom_parameters") )}}
-    {% endif %}
+    {% endif %},
     CASE 
         WHEN event_name = 'page_view' THEN 1
         ELSE 0
