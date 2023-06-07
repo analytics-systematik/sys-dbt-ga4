@@ -98,10 +98,7 @@
     {{ ga4.unnest_key('event_params', 'medium', 'lower_string_value', 'event_medium') }},
     {{ ga4.unnest_key('event_params', 'campaign', 'lower_string_value', 'event_campaign') }},
     {{ ga4.unnest_key('event_params', 'content', 'lower_string_value', 'event_content') }},
-    {{ ga4.unnest_key('event_params', 'term', 'lower_string_value', 'event_term') }}
-    {% if var("default_custom_parameters", "none") != "none" %}
-      {{ ga4.stage_custom_parameters( var("default_custom_parameters") )}}
-    {% endif %},
+    {{ ga4.unnest_key('event_params', 'term', 'lower_string_value', 'event_term') }},
     CASE 
         WHEN event_name = 'page_view' THEN 1
         ELSE 0
