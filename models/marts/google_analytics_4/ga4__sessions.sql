@@ -17,6 +17,7 @@ with fct_ga4_sessions as (
 
     select
         fct_ga4_sessions.*,
+        1 as sessions,
         dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number )
     from fct_ga4_sessions
     left join dim_sessions 
