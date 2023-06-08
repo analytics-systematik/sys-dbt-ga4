@@ -7,9 +7,5 @@ models:
       schema: marts_google_analytics_4
       materialized: table
 
-  - name: ga4__events
-    config:
-      schema: marts_google_analytics_4
-      materialized: table
 
 
