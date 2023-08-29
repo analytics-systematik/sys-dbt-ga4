@@ -25,6 +25,7 @@
     platform,
     ecommerce,
     items,
+    collected_traffic_source
 {% endmacro %}
 
 {% macro base_select_renamed() %}
@@ -84,6 +85,7 @@
     platform,
     ecommerce,
     items,
+    collected_traffic_source.manual_campaign_id as session_campaign_id,
     {{ ga4.unnest_key('event_params', 'ga_session_id', 'int_value', 'session_id') }},
     {{ ga4.unnest_key('event_params', 'page_location') }},
     {{ ga4.unnest_key('event_params', 'ga_session_number',  'int_value', 'session_number') }},

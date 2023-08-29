@@ -45,7 +45,8 @@ with session_first_event as
         user_campaign,
         user_medium,
         user_source,
-        exit_page
+        exit_page,
+        session_campaign_id 
     from session_first_event
 ),
 join_traffic_source as (
