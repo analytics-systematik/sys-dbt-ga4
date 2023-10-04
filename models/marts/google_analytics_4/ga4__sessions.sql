@@ -36,7 +36,7 @@ with fct_ga4_sessions as (
         select
             fct_ga4_sessions.*,
             1 as sessions,
-            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number ),
+            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign ),
             ad_mapping.ad_name as session_ad_name,
             ad_group_mapping.ad_group_name as session_ad_group,
             campaign_mapping.campaign_name as session_campaign
