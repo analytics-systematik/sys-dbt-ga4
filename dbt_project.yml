@@ -19,4 +19,9 @@ models:
     marts:
       +materialized: table
 
-
+vars:
+  enable_fivetran_ad_report_mapping: false
+  enable_other_mapping: false
+  # mapping_dataset: 
+  # mapping_table: 
+  # ad_reporting__ad_report: "{{ ref('ad_reporting__ad_report') }}"
