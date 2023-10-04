@@ -8,7 +8,7 @@ with ad_reporting__ad_report as (
     select 
         distinct
         campaign_id,
-        campaign
+        campaign_name
     from {{ ref('ad_reporting__ad_report') }}
 )
 
