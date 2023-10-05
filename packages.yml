@@ -2,3 +2,5 @@ packages:
   - package: dbt-labs/dbt_utils
     version: 1.0.0
 
+  - package: Velir/ga4
+    version: [">=3.2.0", "<3.3.0"]
