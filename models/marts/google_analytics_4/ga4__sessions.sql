@@ -44,7 +44,7 @@ ga4_sessions as(
         select
             *,
             {%- for param in var('query_parameter_extraction') -%}
-                {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+                {{ get_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
                 {% if not loop.last %},{% endif %}
             {%- endfor -%}
         from ga4_sessions
