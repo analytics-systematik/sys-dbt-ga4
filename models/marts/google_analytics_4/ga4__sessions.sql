@@ -39,16 +39,17 @@ ga4_sessions as(
     left join session_first_event
         on session_first_event.session_key = fct_ga4_sessions.session_key
 ),
-add_query_params as (
-    select
-        *,
-        {%- for param in var('query_parameter_extraction') -%}
-            {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
-            {% if not loop.last %},{% endif %}
-        {%- endfor -%}
-    from ga4_sessions
-)
-
+{% if var('query_parameter_extraction', none) != none %}
+    add_query_params as (
+        select
+            *,
+            {%- for param in var('query_parameter_extraction') -%}
+                {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+                {% if not loop.last %},{% endif %}
+            {%- endfor -%}
+        from ga4_sessions
+    )
+{% endif %}
 {% if var('enable_fivetran_ad_report_mapping', True) %}
     ad_mapping as (
 
@@ -77,10 +78,9 @@ add_query_params as (
         left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
         left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_campaign_id
 
-    ),
-    {% if var('query_parameter_extraction', none) != none %}
-    ,
-    {% endif %}
+    )
+    
+    
 {% else %}
     final as (
 
