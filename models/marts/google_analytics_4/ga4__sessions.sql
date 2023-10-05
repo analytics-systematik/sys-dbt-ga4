@@ -14,6 +14,40 @@ with fct_ga4_sessions as (
     select * from {{ ref('dim_ga4__sessions') }}
 
 ), 
+session_first_event as 
+(
+    select *
+    from {{ref('stg_ga4__events')}}
+    where event_name != 'first_visit' 
+    and event_name != 'session_start'
+    qualify row_number() over(partition by session_key order by event_timestamp) = 1
+),
+ga4_sessions as(
+    select
+            fct_ga4_sessions.*,
+            1 as sessions,
+            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign ),
+            session_first_event.exit_page,
+            session_first_events.session_campaign_id 
+    from fct_ga4_sessions
+    left join dim_sessions 
+        on fct_ga4_sessions.session_key = dim_sessions.session_key
+        and fct_ga4_sessions.session_start_date = dim_sessions.session_start_date
+        and fct_ga4_sessions.session_start_timestamp = dim_sessions.session_start_timestamp
+        and fct_ga4_sessions.stream_id = dim_sessions.stream_id
+        and fct_ga4_sessions.session_number = dim_sessions.session_number
+    left join session_first_event
+        on session_first_event.session_key = fct_ga4_sessions.session_key
+),
+add_query_params as (
+    select
+        *,
+        {%- for param in var('query_parameter_extraction') -%}
+            {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+            {% if not loop.last %},{% endif %}
+        {%- endfor -%}
+    from ga4_sessions
+)
 
 {% if var('enable_fivetran_ad_report_mapping', True) %}
     ad_mapping as (
@@ -34,39 +68,26 @@ with fct_ga4_sessions as (
     final as (
 
         select
-            fct_ga4_sessions.*,
-            1 as sessions,
-            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign ),
+            add_query_params.*,
             ad_mapping.ad_name as session_ad_name,
             ad_group_mapping.ad_group_name as session_ad_group,
             campaign_mapping.campaign_name as session_campaign
-        from fct_ga4_sessions
-        left join dim_sessions 
-            on fct_ga4_sessions.session_key = dim_sessions.session_key
-            and fct_ga4_sessions.session_start_date = dim_sessions.session_start_date
-            and fct_ga4_sessions.session_start_timestamp = dim_sessions.session_start_timestamp
-            and fct_ga4_sessions.stream_id = dim_sessions.stream_id
-            and fct_ga4_sessions.session_number = dim_sessions.session_number
-        left join ad_mapping on ad_mapping.ad_id = dim_sessions.sys_session_ad_id
-        left join ad_group_mapping on ad_group_mapping.ad_group_id = dim_sessions.sys_session_ad_group_id
-        left join campaign_mapping on campaign_mapping.campaign_id = dim_sessions.session_campaign_id
+        from add_query_params
+        left join ad_mapping on ad_mapping.ad_id = add_query_params.session_ad_id
+        left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
+        left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_campaign_id
 
-    )
+    ),
+    {% if var('query_parameter_extraction', none) != none %}
+    ,
+    {% endif %}
 {% else %}
     final as (
 
         select
-            fct_ga4_sessions.*,
-            1 as sessions,
-            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number )
-        from fct_ga4_sessions
-        left join dim_sessions 
-            on fct_ga4_sessions.session_key = dim_sessions.session_key
-            and fct_ga4_sessions.session_start_date = dim_sessions.session_start_date
-            and fct_ga4_sessions.session_start_timestamp = dim_sessions.session_start_timestamp
-            and fct_ga4_sessions.stream_id = dim_sessions.stream_id
-            and fct_ga4_sessions.session_number = dim_sessions.session_number
-
+            *
+        from add_query_params
+        
     )
 {% endif %}
 
