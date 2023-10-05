@@ -49,46 +49,55 @@ ga4_sessions as(
             {%- endfor -%}
         from ga4_sessions
     )
-{% endif %}
-{% if var('enable_fivetran_ad_report_mapping', True) %}
-    ad_mapping as (
+    {% if var('enable_fivetran_ad_report_mapping', True) %}
+        ad_mapping as (
 
-        select * from {{ ref('stg_ads__ad_mapping') }}
+            select * from {{ ref('stg_ads__ad_mapping') }}
 
-    ), 
-    ad_group_mapping as (
+        ), 
+        ad_group_mapping as (
 
-        select * from {{ ref('stg_ads__ad_group_mapping') }}
+            select * from {{ ref('stg_ads__ad_group_mapping') }}
 
-    ), 
-    campaign_mapping as (
+        ), 
+        campaign_mapping as (
 
-        select * from {{ ref('stg_ads__campaign_mapping') }}
+            select * from {{ ref('stg_ads__campaign_mapping') }}
 
-    ), 
-    final as (
+        ), 
+        final as (
 
-        select
-            add_query_params.*,
-            ad_mapping.ad_name as session_ad_name,
-            ad_group_mapping.ad_group_name as session_ad_group,
-            campaign_mapping.campaign_name as session_campaign
-        from add_query_params
-        left join ad_mapping on ad_mapping.ad_id = add_query_params.session_ad_id
-        left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
-        left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_campaign_id
+            select
+                add_query_params.*,
+                ad_mapping.ad_name as session_ad_name,
+                ad_group_mapping.ad_group_name as session_ad_group,
+                campaign_mapping.campaign_name as session_campaign
+            from add_query_params
+            left join ad_mapping on ad_mapping.ad_id = add_query_params.session_ad_id
+            left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
+            left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_campaign_id
 
-    )
-    
-    
-{% else %}
-    final as (
-
-        select
-            *
-        from add_query_params
+        )
         
-    )
+        
+    {% else %}
+        final as (
+
+            select
+                *
+            from add_query_params
+            
+        )
+    {% endif %}
+{% else %}
+final as (
+
+    select
+        *
+    from ga4_sessions
+            
+)
 {% endif %}
+
 
 select * from final
