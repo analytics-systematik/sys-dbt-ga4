@@ -1,6 +1,0 @@
-version: 2
-
-models:  
-  - name: stg_ga4__page_conversions
-    config:
-      schema: stg_google_analytics_4

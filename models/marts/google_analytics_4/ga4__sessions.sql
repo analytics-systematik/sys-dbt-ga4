@@ -31,7 +31,7 @@ with fct_ga4_sessions as (
         select * from {{ ref('stg_ads__campaign_mapping') }}
 
     ), 
-    final as (
+    sessions as (
 
         select
             fct_ga4_sessions.*,
@@ -51,9 +51,20 @@ with fct_ga4_sessions as (
         left join ad_group_mapping on ad_group_mapping.ad_group_id = dim_sessions.sys_session_ad_group_id
         left join campaign_mapping on campaign_mapping.campaign_id = dim_sessions.session_campaign_id
 
-    )
+    ),
+    {% if var('query_parameter_extraction', none) != none %}
+    add_query_params as (
+        select
+            *,
+            {%- for param in var('query_parameter_extraction') -%}
+                {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+                {% if not loop.last %},{% endif %}
+            {%- endfor -%}
+        from sessions
+    ),
+    {% endif %}
 {% else %}
-    final as (
+    sessions as (
 
         select
             fct_ga4_sessions.*,
@@ -67,7 +78,18 @@ with fct_ga4_sessions as (
             and fct_ga4_sessions.stream_id = dim_sessions.stream_id
             and fct_ga4_sessions.session_number = dim_sessions.session_number
 
-    )
+    ),
+    {% if var('query_parameter_extraction', none) != none %}
+    add_query_params as (
+        select
+            *,
+            {%- for param in var('query_parameter_extraction') -%}
+                {{ extract_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+                {% if not loop.last %},{% endif %}
+            {%- endfor -%}
+        from sessions
+    ),
+    {% endif %}
 {% endif %}
 
 select * from final
