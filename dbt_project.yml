@@ -22,6 +22,7 @@ models:
 vars:
   enable_fivetran_ad_report_mapping: false
   enable_other_mapping: false
+  query_parameter_extraction: ["ad_group_id","ad_id","utm_id"] 
   # mapping_dataset: 
   # mapping_table: 
   # ad_reporting__ad_report: "{{ ref('ad_reporting__ad_report') }}"

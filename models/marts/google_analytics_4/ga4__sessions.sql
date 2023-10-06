@@ -27,8 +27,7 @@ ga4_sessions as(
             fct_ga4_sessions.*,
             1 as sessions,
             dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign ),
-            session_first_event.exit_page,
-            session_first_events.session_campaign_id 
+            -- session_first_event.exit_page,
     from fct_ga4_sessions
     left join dim_sessions 
         on fct_ga4_sessions.session_key = dim_sessions.session_key
@@ -75,7 +74,7 @@ ga4_sessions as(
             from add_query_params
             left join ad_mapping on ad_mapping.ad_id = add_query_params.session_ad_id
             left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
-            left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_campaign_id
+            left join campaign_mapping on campaign_mapping.campaign_id = add_query_params.session_utm_id
 
         )
         
