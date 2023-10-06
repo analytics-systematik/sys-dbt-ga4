@@ -27,7 +27,6 @@ ga4_sessions as(
             fct_ga4_sessions.*,
             1 as sessions,
             dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign ),
-            session_first_event.campaign_id,
     from fct_ga4_sessions
     left join dim_sessions 
         on fct_ga4_sessions.session_key = dim_sessions.session_key
@@ -47,7 +46,7 @@ ga4_sessions as(
                 {% if not loop.last %},{% endif %}
             {%- endfor -%}
         from ga4_sessions
-    )
+    ),
     {% if var('enable_fivetran_ad_report_mapping', True) %}
         ad_mapping as (
 
