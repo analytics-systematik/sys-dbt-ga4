@@ -1,7 +1,8 @@
 {{ 
   config(
     unique_key = "surrogate_key",
-    partition_by ={ "field": "session_start_date", "data_type": "date" }
+    partition_by ={ "field": "session_start_date", "data_type": "date" },
+    schema = "google_analytics_4"
   ) 
 }}
 
