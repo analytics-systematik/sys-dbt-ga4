@@ -1,5 +1,5 @@
 name: 'sys_dbt_ga4'
-version: '1.0.0'
+version: '1.0.1'
 config-version: 2
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -28,7 +28,3 @@ vars:
   # mapping_dataset: 
   # mapping_table: 
   # ad_reporting__ad_report: "{{ ref('ad_reporting__ad_report') }}"
-  ga4:
-    default_custom_parameters:
-      - name: "campaign_id"
-        value_type: "string_value"
