@@ -1,5 +1,5 @@
 {% if var('enable_fivetran_ad_report_mapping', True) %}
-    {{ config(enabled=true, schema='marts_marketing') }}
+    {{ config(materialized='table', unique_key = "surrogate_key", partition_by ={ "field": "date_day", "data_type": "date" }, enabled=true, schema='marts_marketing') }}
 {% else %}
     {{ config(enabled=false) }}
 {% endif %}
@@ -10,7 +10,7 @@ with paid_ads as (
         platform,
         account_name as account,
         campaign_name as campaign,
-        ad_set_name as ad_group,
+        ad_group_name as ad_group,
         ad_name as ad,
         cast(null as {{ dbt.type_string() }}) as session_source,
         cast(null as {{ dbt.type_string() }}) as session_medium,
@@ -24,7 +24,7 @@ with paid_ads as (
 ga4_sessions_with_purchases as (
     select 
         session_start_date as date_day,
-        null as platform,
+        cast(null as {{ dbt.type_string() }}) as platform,
         cast(null as {{ dbt.type_string() }}) as account,
         session_campaign as campaign,
         session_ad_group as ad_group,        	
@@ -34,8 +34,8 @@ ga4_sessions_with_purchases as (
         null as clicks,
         null as impressions,
         null as spend,
-        conversions,
-        revenue
+        count_purchase as conversions,
+        sum_event_value_in_usd as revenue
     from {{ ref('ga4__sessions') }}
     where count_purchase > 0
 ),
