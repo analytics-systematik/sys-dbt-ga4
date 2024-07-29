@@ -4,6 +4,8 @@
     {{ config(enabled=false) }}
 {% endif %}
 
+{% set conversions_field = var('conversions_field', 'count_pageviews') %}
+
 with paid_ads as (
     select
         date_day,
@@ -34,7 +36,7 @@ ga4_sessions_with_purchases as (
         null as clicks,
         null as impressions,
         null as spend,
-        count_purchase as conversions,
+        {{ conversions_field }} as conversions,
         sum_event_value_in_usd as revenue
     from {{ ref('ga4__sessions') }}
     where count_purchase > 0
