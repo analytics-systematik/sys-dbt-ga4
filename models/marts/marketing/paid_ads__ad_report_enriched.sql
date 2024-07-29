@@ -39,7 +39,7 @@ ga4_sessions_with_purchases as (
         {{ conversions_field }} as conversions,
         sum_event_value_in_usd as revenue
     from {{ ref('ga4__sessions') }}
-    where count_purchase > 0
+    where {{ conversions_field }} > 0
 ),
 final as (
     select * from paid_ads
