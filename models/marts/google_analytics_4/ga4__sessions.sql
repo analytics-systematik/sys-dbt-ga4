@@ -32,13 +32,13 @@ ga4_sessions as(
             dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign, session_source ),
             case
                 when session_source = "g" then "google"
-                when session_source = "s" then "google partner"
-                when session_source = "d" then "google display"
+                when session_source = "s" then "google"
+                when session_source = "d" then "google"
                 when session_source = "ytv" then "youtube"
-                when session_source = "vp" then "google video partner"
+                when session_source = "vp" then "google"
                 when session_source = "ig" then "instagram"
-                when session_source = "an" then "meta audience network"
-                when session_source = "msg" then "facebook messenger"
+                when session_source = "an" then "facebook"
+                when session_source = "msg" then "facebook"
                 when session_source = "fb" then "facebook"
                 else session_source
             end as session_source,
