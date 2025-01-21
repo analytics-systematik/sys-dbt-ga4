@@ -82,7 +82,7 @@ ga4_sessions as(
         final as (
 
             select
-                add_query_params.*,
+                add_query_params.* except (session_campaign),
                 ad_mapping.ad_name as session_ad_name,
                 ad_group_mapping.ad_group_name as session_ad_group,
                 coalesce(campaign_mapping.campaign_name, add_query_params.session_campaign) as session_campaign
