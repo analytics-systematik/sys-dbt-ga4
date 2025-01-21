@@ -29,7 +29,7 @@ ga4_sessions as(
     select
             fct_ga4_sessions.*,
             1 as sessions,
-            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_campaign, session_source ),
+            dim_sessions.*  except(session_start_date, session_start_timestamp, stream_id, session_key, session_number, session_source ),
             case
                 when session_source = "g" then "google"
                 when session_source = "s" then "google"
@@ -85,7 +85,7 @@ ga4_sessions as(
                 add_query_params.*,
                 ad_mapping.ad_name as session_ad_name,
                 ad_group_mapping.ad_group_name as session_ad_group,
-                campaign_mapping.campaign_name as session_campaign
+                coalesce(campaign_mapping.campaign_name, add_query_params.session_campaign) as session_campaign
             from add_query_params
             left join ad_mapping on ad_mapping.ad_id = add_query_params.session_ad_id
             left join ad_group_mapping on ad_group_mapping.ad_group_id = add_query_params.session_ad_group_id
