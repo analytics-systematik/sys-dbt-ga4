@@ -36,7 +36,6 @@ ga4_sessions_aggregated as (
         sum(case when {{ conversions_field }} > 0 then sum_event_value_in_usd else 0 end) as revenue,
         sum(sessions) as sessions
     from {{ ref('ga4__sessions') }}
-    where session_utm_id is not null
     group by 1, 2
 ),
 final as (
