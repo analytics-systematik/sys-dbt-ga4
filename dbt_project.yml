@@ -25,6 +25,9 @@ vars:
   enable_fivetran_ad_report_mapping: false
   enable_other_mapping: false
   query_parameter_extraction: ["ad_group_id","ad_id","utm_id"] 
+  # Filter out sessions where landing page hostname matches any in this list
+  # Example: excluded_landing_page_hostnames: ["www.domain.com"]
+  excluded_landing_page_hostnames: []
   # mapping_dataset: 
   # mapping_table: 
   # ad_reporting__ad_report: "{{ ref('ad_reporting__ad_report') }}"
