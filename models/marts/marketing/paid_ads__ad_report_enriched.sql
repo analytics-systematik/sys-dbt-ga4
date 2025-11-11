@@ -5,6 +5,7 @@
 {% endif %}
 
 {% set conversions_field = var('conversions_field', 'count_pageviews') %}
+{% set excluded_landing_page_hostnames = var('excluded_landing_page_hostnames', []) %}
 
 with paid_ads as (
     select
@@ -40,6 +41,14 @@ ga4_sessions_with_purchases as (
         sum_event_value_in_usd as revenue
     from {{ ref('ga4__sessions') }}
     where {{ conversions_field }} > 0
+    {% if excluded_landing_page_hostnames | length > 0 %}
+        and (landing_page is null 
+             or NET.HOST(landing_page) not in (
+                 {%- for hostname in excluded_landing_page_hostnames -%}
+                     '{{ hostname }}'{% if not loop.last %},{% endif %}
+                 {%- endfor -%}
+             ))
+    {% endif %}
 ),
 final as (
     select * from paid_ads
