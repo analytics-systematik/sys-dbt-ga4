@@ -64,6 +64,7 @@ final as (
         ga4_sessions_aggregated.revenue,
         ga4_sessions_aggregated.sessions
     from paid_ads
+
     left join ga4_sessions_aggregated
         on paid_ads.campaign_id = ga4_sessions_aggregated.campaign_id
         and paid_ads.date_day = ga4_sessions_aggregated.date_day
