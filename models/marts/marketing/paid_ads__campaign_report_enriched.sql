@@ -11,7 +11,7 @@ with paid_ads as (
     select
         date_day,
         campaign_id,
-        platform,
+        regexp_replace(platform, r'(?i)facebook', 'meta') as platform,
         account_name as account,
         campaign_name as campaign,
         cast(null as {{ dbt.type_string() }}) as session_source,
