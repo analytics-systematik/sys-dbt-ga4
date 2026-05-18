@@ -31,6 +31,28 @@ google_ads_conversions as (
     from {{ ref('google_ads__campaign_report') }}
     group by 1, 2
 ),
+{% if var('enable_meta_platform_conversions', false) %}
+meta_ads_conversions as (
+    select
+        date_day,
+        cast(campaign_id as {{ dbt.type_string() }}) as campaign_id,
+        sum(conversions) as platform_conversions,
+        sum(conversions_value) as platform_conversions_value
+    from {{ ref('facebook_ads__campaign_report') }}
+    group by 1, 2
+),
+{% endif %}
+{% if var('enable_microsoft_platform_conversions', false) %}
+microsoft_ads_conversions as (
+    select
+        date_day,
+        cast(campaign_id as {{ dbt.type_string() }}) as campaign_id,
+        sum(conversions) as platform_conversions,
+        sum(conversions_value) as platform_conversions_value
+    from {{ ref('microsoft_ads__campaign_report') }}
+    group by 1, 2
+),
+{% endif %}
 ga4_sessions_aggregated as (
     select 
         session_start_date as date_day,
@@ -97,8 +119,24 @@ final as (
         paid_ads.clicks,
         paid_ads.impressions,
         paid_ads.spend,
-        google_ads_conversions.platform_conversions,
-        google_ads_conversions.platform_conversions_value,
+        coalesce(
+            google_ads_conversions.platform_conversions
+            {% if var('enable_meta_platform_conversions', false) %}
+            , meta_ads_conversions.platform_conversions
+            {% endif %}
+            {% if var('enable_microsoft_platform_conversions', false) %}
+            , microsoft_ads_conversions.platform_conversions
+            {% endif %}
+        ) as platform_conversions,
+        coalesce(
+            google_ads_conversions.platform_conversions_value
+            {% if var('enable_meta_platform_conversions', false) %}
+            , meta_ads_conversions.platform_conversions_value
+            {% endif %}
+            {% if var('enable_microsoft_platform_conversions', false) %}
+            , microsoft_ads_conversions.platform_conversions_value
+            {% endif %}
+        ) as platform_conversions_value,
         ga4_sessions_aggregated.ga4_session_conversions,
         ga4_sessions_aggregated.ga4_session_revenue,
         ga4_last_non_direct_conversions.ga4_last_non_direct_conversions,
@@ -109,6 +147,18 @@ final as (
     left join google_ads_conversions
         on paid_ads.campaign_id = google_ads_conversions.campaign_id
         and paid_ads.date_day = google_ads_conversions.date_day
+
+    {% if var('enable_meta_platform_conversions', false) %}
+    left join meta_ads_conversions
+        on paid_ads.campaign_id = meta_ads_conversions.campaign_id
+        and paid_ads.date_day = meta_ads_conversions.date_day
+    {% endif %}
+
+    {% if var('enable_microsoft_platform_conversions', false) %}
+    left join microsoft_ads_conversions
+        on paid_ads.campaign_id = microsoft_ads_conversions.campaign_id
+        and paid_ads.date_day = microsoft_ads_conversions.date_day
+    {% endif %}
 
     left join ga4_sessions_aggregated
         on paid_ads.campaign_id = ga4_sessions_aggregated.campaign_id

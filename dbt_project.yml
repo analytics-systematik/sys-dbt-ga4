@@ -1,5 +1,5 @@
 name: 'sys_dbt_ga4'
-version: '1.0.1'
+version: '1.0.19'
 config-version: 2
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -28,6 +28,8 @@ vars:
   # Filter out sessions where landing page hostname matches any in this list
   # Example: excluded_landing_page_hostnames: ["www.domain.com"]
   excluded_landing_page_hostnames: []
+  enable_meta_platform_conversions: false
+  enable_microsoft_platform_conversions: false
   # mapping_dataset: 
   # mapping_table: 
   # ad_reporting__ad_report: "{{ ref('ad_reporting__ad_report') }}"
