@@ -32,6 +32,17 @@ google_ads_ad_conversions as (
     from {{ ref('google_ads__ad_report') }}
     group by 1, 2
 ),
+{% if var('enable_meta_platform_conversions', false) %}
+meta_ads_ad_conversions as (
+    select
+        date_day,
+        cast(ad_id as {{ dbt.type_string() }}) as ad_id,
+        sum(conversions) as platform_conversions,
+        sum(conversions_value) as platform_conversions_value
+    from {{ ref('facebook_ads__ad_report') }}
+    group by 1, 2
+),
+{% endif %}
 paid_ads as (
     select
         ad_report.date_day,
@@ -45,8 +56,18 @@ paid_ads as (
         ad_report.clicks,
         ad_report.impressions,
         ad_report.spend,
-        gac.platform_conversions,
-        gac.platform_conversions_value,
+        coalesce(
+            gac.platform_conversions
+            {% if var('enable_meta_platform_conversions', false) %}
+            , mac.platform_conversions
+            {% endif %}
+        ) as platform_conversions,
+        coalesce(
+            gac.platform_conversions_value
+            {% if var('enable_meta_platform_conversions', false) %}
+            , mac.platform_conversions_value
+            {% endif %}
+        ) as platform_conversions_value,
         cast(null as float64) as ga4_session_conversions,
         cast(null as float64) as ga4_session_revenue,
         cast(null as float64) as ga4_last_non_direct_conversions,
@@ -55,6 +76,11 @@ paid_ads as (
     left join google_ads_ad_conversions gac
         on ad_report.ad_id = gac.ad_id
         and ad_report.date_day = gac.date_day
+    {% if var('enable_meta_platform_conversions', false) %}
+    left join meta_ads_ad_conversions mac
+        on ad_report.ad_id = mac.ad_id
+        and ad_report.date_day = mac.date_day
+    {% endif %}
 ),
 ga4_sessions_with_purchases as (
     select 
