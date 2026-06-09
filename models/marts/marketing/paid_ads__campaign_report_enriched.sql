@@ -77,21 +77,35 @@ ga4_sessions_aggregated as (
     {% endif %}
     group by 1, 2
 ),
+session_landing_lookup as (
+    -- One row per session-partition with the UTM id parsed from that session's landing page.
+    -- Used to resolve the campaign of the LAST NON-DIRECT touch via the lookback pointer.
+    select
+        session_partition_key,
+        landing_page_location,
+        {{ get_query_parameter_value('landing_page_location', 'utm_id') }} as campaign_id
+    from {{ ref('dim_ga4__sessions_daily') }}
+),
 ga4_last_non_direct_sessions as (
     select
         fct.session_partition_date as date_day,
-        {{ get_query_parameter_value('dim.landing_page_location', 'utm_id') }} as campaign_id,
-        dim.last_non_direct_source,
-        dim.last_non_direct_medium,
+        -- Campaign id of the LAST NON-DIRECT session (the prior touch), not the
+        -- converting session's own landing page. For self-attributed sessions
+        -- (the converting session is the last non-direct touch) this is unchanged.
+        prior.campaign_id as campaign_id,
+        lnd.last_non_direct_source,
+        lnd.last_non_direct_medium,
         fct.session_partition_sum_event_value_in_usd,
         fct.purchase_count
     from {{ ref('fct_ga4__sessions_daily') }} fct
-    inner join {{ ref('dim_ga4__sessions_daily') }} dim
-        on fct.session_partition_key = dim.session_partition_key
-    where dim.last_non_direct_source != '(direct)'
+    inner join {{ ref('stg_ga4__sessions_traffic_sources_last_non_direct_daily') }} lnd
+        on fct.session_partition_key = lnd.session_partition_key
+    inner join session_landing_lookup prior
+        on prior.session_partition_key = lnd.session_partition_key_last_non_direct
+    where lnd.last_non_direct_source != '(direct)'
     {% if excluded_landing_page_hostnames | length > 0 %}
-        and (dim.landing_page_location is null 
-             or NET.HOST(dim.landing_page_location) not in (
+        and (prior.landing_page_location is null 
+             or NET.HOST(prior.landing_page_location) not in (
                  {%- for hostname in excluded_landing_page_hostnames -%}
                      '{{ hostname }}'{% if not loop.last %},{% endif %}
                  {%- endfor -%}

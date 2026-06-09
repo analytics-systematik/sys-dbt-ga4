@@ -6,6 +6,13 @@ models:
     config:
       schema: marts_google_analytics_4
       materialized: table
+    columns:
+      - name: landing_page_location
+        description: >
+          First non-null page_location across the session's events (FIRST_VALUE ... IGNORE NULLS),
+          mirroring dim_ga4__sessions_daily. Used as the source for query-parameter extraction
+          (session_utm_id, session_ad_id, session_ad_group_id) so campaign attribution is not lost
+          when the first session event has no URL. Falls back to landing_page when null.
 
 
 

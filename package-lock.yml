@@ -1,0 +1,8 @@
+packages:
+  - name: dbt_utils
+    package: dbt-labs/dbt_utils
+    version: 1.0.0
+  - name: ga4
+    package: Velir/ga4
+    version: 6.0.2
+sha1_hash: 22abdad3ae8cbeb0a194d64348218f2397824e6a
