@@ -112,16 +112,38 @@ ga4_sessions_with_purchases as (
              ))
     {% endif %}
 ),
+session_landing_lookup as (
+    -- Params parsed from each session's landing page, used to resolve the campaign/ad/ad_group
+    -- of the LAST NON-DIRECT touch via the lookback pointer (mirrors ga4__sessions extraction).
+    select
+        session_partition_key,
+        landing_page_location,
+        {{ get_query_parameter_value('landing_page_location', 'utm_id') }} as session_utm_id,
+        {{ get_query_parameter_value('landing_page_location', 'ad_id') }} as session_ad_id,
+        {{ get_query_parameter_value('landing_page_location', 'ad_group_id') }} as session_ad_group_id
+    from {{ ref('dim_ga4__sessions_daily') }}
+),
+campaign_mapping as (
+    select * from {{ ref('stg_ads__campaign_mapping') }}
+),
+ad_group_mapping as (
+    select * from {{ ref('stg_ads__ad_group_mapping') }}
+),
+ad_mapping as (
+    select * from {{ ref('stg_ads__ad_mapping') }}
+),
 ga4_last_non_direct_sessions_with_purchases as (
     select
         fct.session_partition_date as date_day,
         cast(null as {{ dbt.type_string() }}) as platform,
         cast(null as {{ dbt.type_string() }}) as account,
-        dim.last_non_direct_campaign as campaign,
-        cast(null as {{ dbt.type_string() }}) as ad_group,
-        cast(null as {{ dbt.type_string() }}) as ad,
-        dim.last_non_direct_source as session_source,
-        dim.last_non_direct_medium as session_medium,
+        -- Campaign/ad/ad_group of the LAST NON-DIRECT touch (the prior session), mapped to
+        -- names so these rows align with the paid_ads and session segments.
+        coalesce(campaign_mapping.campaign_name, lnd.last_non_direct_campaign) as campaign,
+        ad_group_mapping.ad_group_name as ad_group,
+        ad_mapping.ad_name as ad,
+        lnd.last_non_direct_source as session_source,
+        lnd.last_non_direct_medium as session_medium,
         null as clicks,
         null as impressions,
         null as spend,
@@ -132,13 +154,18 @@ ga4_last_non_direct_sessions_with_purchases as (
         fct.purchase_count as ga4_last_non_direct_conversions,
         fct.session_partition_sum_event_value_in_usd as ga4_last_non_direct_revenue
     from {{ ref('fct_ga4__sessions_daily') }} fct
-    inner join {{ ref('dim_ga4__sessions_daily') }} dim
-        on fct.session_partition_key = dim.session_partition_key
+    inner join {{ ref('stg_ga4__sessions_traffic_sources_last_non_direct_daily') }} lnd
+        on fct.session_partition_key = lnd.session_partition_key
+    inner join session_landing_lookup prior
+        on prior.session_partition_key = lnd.session_partition_key_last_non_direct
+    left join campaign_mapping on campaign_mapping.campaign_id = prior.session_utm_id
+    left join ad_group_mapping on ad_group_mapping.ad_group_id = prior.session_ad_group_id
+    left join ad_mapping on ad_mapping.ad_id = prior.session_ad_id
     where fct.purchase_count > 0
-        and dim.last_non_direct_source != '(direct)'
+        and lnd.last_non_direct_source != '(direct)'
     {% if excluded_landing_page_hostnames | length > 0 %}
-        and (dim.landing_page_location is null 
-             or NET.HOST(dim.landing_page_location) not in (
+        and (prior.landing_page_location is null 
+             or NET.HOST(prior.landing_page_location) not in (
                  {%- for hostname in excluded_landing_page_hostnames -%}
                      '{{ hostname }}'{% if not loop.last %},{% endif %}
                  {%- endfor -%}

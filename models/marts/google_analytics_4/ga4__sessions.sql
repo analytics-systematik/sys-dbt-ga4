@@ -25,6 +25,24 @@ session_first_event as
     and event_name != 'session_start'
     qualify row_number() over(partition by session_key order by event_timestamp) = 1
 ),
+session_landing_page as
+(
+    -- Complete landing page: first NON-NULL page_location across the session,
+    -- mirroring dim_ga4__sessions_daily (FIRST_VALUE ... IGNORE NULLS). The package's
+    -- non-daily dim_ga4__sessions.landing_page uses the first event's page_location as-is,
+    -- which is NULL when that event has no URL, dropping campaign attribution downstream.
+    select
+        session_key,
+        first_value(page_location ignore nulls) over (
+            partition by session_key
+            order by event_timestamp
+            rows between unbounded preceding and unbounded following
+        ) as landing_page_location
+    from {{ref('stg_ga4__events')}}
+    where event_name != 'first_visit'
+    and event_name != 'session_start'
+    qualify row_number() over(partition by session_key order by event_timestamp) = 1
+),
 ga4_sessions as(
     select
             fct_ga4_sessions.*,
@@ -42,7 +60,8 @@ ga4_sessions as(
                 when session_source = "fb" then "facebook"
                 else session_source
             end as session_source,
-            {{ conversions_field }} as conversions
+            {{ conversions_field }} as conversions,
+            session_landing_page.landing_page_location as landing_page_location
     from fct_ga4_sessions
     left join dim_sessions 
         on fct_ga4_sessions.session_key = dim_sessions.session_key
@@ -52,13 +71,15 @@ ga4_sessions as(
         and fct_ga4_sessions.session_number = dim_sessions.session_number
     left join session_first_event
         on session_first_event.session_key = fct_ga4_sessions.session_key
+    left join session_landing_page
+        on session_landing_page.session_key = fct_ga4_sessions.session_key
 ),
 {% if var('query_parameter_extraction', none) != none %}
     add_query_params as (
         select
             *,
             {%- for param in var('query_parameter_extraction') -%}
-                {{ get_query_parameter_value( 'landing_page' , param ) }} as {{"session_"+param}}
+                {{ get_query_parameter_value( 'coalesce(landing_page_location, landing_page)' , param ) }} as {{"session_"+param}}
                 {% if not loop.last %},{% endif %}
             {%- endfor -%}
         from ga4_sessions
